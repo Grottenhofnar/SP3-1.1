@@ -9,10 +9,10 @@ public class Movies {
     private List<String> genres;
     private double rating;
 
-    public Movies(String name, int releaseYear, String genresString, double rating) {
+    public Movies(String name, int releaseYear, String genreString, double rating) {
         this.name = name;
         this.releaseYear = releaseYear;
-        this.genres = Arrays.asList(genresString.split(",\\s*"));
+        this.genres = Arrays.asList(genreString.split(",\\s*"));
         this.rating = rating;
     }
 
@@ -32,9 +32,9 @@ public class Movies {
         return rating;
     }
 
-    public boolean hasGenre(String genre) {
-        for (String s : genres) {
-            if (s.equalsIgnoreCase(genre)) return true;
+    public boolean hasGenres(String genre) {
+        for (String g : genres) {
+            if (g.equalsIgnoreCase(genre)) return true;
         }
         return false;
     }

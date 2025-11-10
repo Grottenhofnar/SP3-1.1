@@ -100,8 +100,6 @@ private void logInUser(){
 }
 
 public void mainMenu(){
-    ui.displayMsg("Velkommen til Chill!");
-
     ui.displayMsg("1. Søg efter film");
     ui.displayMsg("2. Se din liste over sete film");
     ui.displayMsg("3. Se din liste over gemte film");
@@ -153,10 +151,12 @@ switch (choice) {
         break;
 
     case "2":
-        ui.displayMsg("Indtast kategori:");
-        String genres = sc.nextLine().toLowerCase();
+        ui.displayMsg("Indtast kategori: ");
+        String genres = sc.nextLine();
         for (Movies m : movies) {
-            if (m.getGenres().contains(genres)) results.add(m);
+            if (m.hasGenres(genres)) {
+                results.add(m);
+            }
         }
         break;
 
@@ -189,16 +189,14 @@ switch (choice) {
         for (int i = 0; i < results.size(); i++) {
             ui.displayMsg((i+1) + ". " + results.get(i));
         }
-
-        ui.displayMsg("Vælge en film at se");
+        ui.displayMsg("Vælg en film at se");
         int index = Integer.parseInt(sc.nextLine()) - 1;
 
         if (index >= 0 && index < results.size()) {
             movieMenu(results.get(index));
+
         }
-
     }
-
 }
 
 public void movieMenu(Movies movies){
@@ -213,7 +211,7 @@ public void movieMenu(Movies movies){
     switch (choice) {
         case "1":
             ui.displayMsg("Afspiller nu: " + movies.getName());
-            mainMenu();
+            afspilningsMenu();
             break;
         case "2":
             saveMovie(movies, "CSV/SeeLater.txt");
@@ -314,6 +312,28 @@ public void viewList(String filename, String listName) {
     ui.displayMsg("Tryk enter for at gå tilbage.");
     sc.nextLine();
     mainMenu();
+}
+
+public void afspilningsMenu(){
+    ui.displayMsg("1. Sæt filmen på pause");
+    ui.displayMsg("2. Vælg en anden film");
+    System.out.print("Vælg: ");
+    String Choice =  sc.nextLine();
+
+    switch (Choice) {
+        case "1": ui.displayMsg("Filmen er nu sat på pause. Tryk på hvilken som helst knap for at starte igen");
+        String startMovie = sc.nextLine();
+        if (!startMovie.isEmpty() || startMovie.isEmpty()) {
+            ui.displayMsg("Filmen er begyndt igen");
+            afspilningsMenu();
+        }
+        break;
+        case "2": searchMovies();
+        break;
+        default:
+        ui.displayMsg("Inputtet findes ikke. Prøv med 1 eller 2");
+    }
+
 }
 
 
