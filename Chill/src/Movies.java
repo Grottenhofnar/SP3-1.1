@@ -118,42 +118,9 @@ public class Movies {
             int index = Integer.parseInt(sc.nextLine()) - 1;
 
             if (index >= 0 && index < results.size()) {
-                movieMenu(results.get(index));
+                Menu.movieMenu(results.get(index));
 
             }
-        }
-    }
-
-    public static void movieMenu(Movies movies){
-        ui.displayMsg(" Du har valgt: " + movies.getName());
-        ui.displayMsg("1. Afspil filmen");
-        ui.displayMsg("2. Gem til 'Se senere'");
-        ui.displayMsg("3. Fjern fra 'Se senere'");
-        ui.displayMsg("4. Tilbage");
-        System.out.print("Vælg: ");
-        String choice = sc.nextLine();
-
-        switch (choice) {
-            case "1":
-                ui.displayMsg("Afspiller nu: " + movies.getName());
-                saveMovie(movies,"CSV/FilmSet.txt");
-                playingMenu();
-                break;
-            case "2":
-                saveMovie(movies, "CSV/SeSenere.txt");
-                ui.displayMsg(movies.getName() + " er gemt til din se senere liste");
-                Menu.mainMenu();
-                break;
-            case "3":
-                removeMovie(movies, "CSV/SeSenere.txt");
-                ui.displayMsg(movies.getName() + " er fjernet fra din se senere liste");
-                Menu.mainMenu();
-                break;
-            case "4":
-                Menu.mainMenu();
-                break;
-            default:
-                movieMenu(movies);
         }
     }
 
