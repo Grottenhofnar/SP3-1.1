@@ -46,81 +46,88 @@ public class Movies {
         return false;
     }
 
-    public static void searchMovies(){
+    public static void searchMovies() {
         ArrayList<Movies> movies = loadMovies();
 
-        ui.displayMsg("Du kan vælge at søge efter film med følgende muligheder: ");
-        ui.displayMsg("1. Efter navn");
-        ui.displayMsg("2. Efter kategorier");
-        ui.displayMsg("3. Efter udgivelsesår");
-        ui.displayMsg("4. Efter bedømmelse");
-        ui.displayMsg("5. Print alle film ud");
-        System.out.print("Vælg: ");
-        String choice = sc.nextLine();
+        try {
+            ui.displayMsg("Du kan vælge at søge efter film med følgende muligheder: ");
+            ui.displayMsg("1. Efter navn");
+            ui.displayMsg("2. Efter kategorier");
+            ui.displayMsg("3. Efter udgivelsesår");
+            ui.displayMsg("4. Efter bedømmelse");
+            ui.displayMsg("5. Print alle film ud");
+            ui.displayMsg("6. Tilbage");
+            System.out.print("Vælg: ");
+            String choice = sc.nextLine();
 
-        ArrayList<Movies> results = new ArrayList<>();
+            ArrayList<Movies> results = new ArrayList<>();
 
-        switch (choice) {
-            case "1":
-                ui.displayMsg("Indtast venligst filmens navn: ");
-                String inputName = sc.nextLine().toLowerCase();
-                for (Movies m : movies) {
-                    if (m.getName().toLowerCase().contains(inputName)) results.add(m);
-                }
-                break;
-
-            case "2":
-                ui.displayMsg("Indtast kategori: ");
-                String genres = sc.nextLine();
-                for (Movies m : movies) {
-                    if (m.hasGenres(genres)) {
-                        results.add(m);
+            switch (choice) {
+                case "1":
+                    ui.displayMsg("Indtast venligst filmens navn: ");
+                    String inputName = sc.nextLine().toLowerCase();
+                    for (Movies m : movies) {
+                        if (m.getName().toLowerCase().contains(inputName)) results.add(m);
                     }
-                }
-                break;
-
-            case "3":
-                ui.displayMsg("Indtast udgivelsesår: ");
-                int year = Integer.parseInt(sc.nextLine());
-                for (Movies m : movies) {
-                    if (m.getReleaseYear() == year) results.add(m);
-                }
-                break;
-            case "4":
-                ui.displayMsg("Minimum bedømmelse: ");
-                double minRating = Double.parseDouble(sc.nextLine());
-                for (Movies m : movies) {
-                    if (m.getRating() >= minRating) results.add(m);
-                }
-                break;
-
+                    break;
+                case "2":
+                    ui.displayMsg("Indtast kategori: ");
+                    String genres = sc.nextLine();
+                    for (Movies m : movies) {
+                        if (m.hasGenres(genres)) {
+                            results.add(m);
+                        }
+                    }
+                    break;
+                case "3":
+                    ui.displayMsg("Indtast udgivelsesår: ");
+                    int year = Integer.parseInt(sc.nextLine());
+                    for (Movies m : movies) {
+                        if (m.getReleaseYear() == year) results.add(m);
+                    }
+                    break;
+                case "4":
+                    ui.displayMsg("Minimum bedømmelse: ");
+                    double minRating = Double.parseDouble(sc.nextLine());
+                    for (Movies m : movies) {
+                        if (m.getRating() >= minRating) results.add(m);
+                    }
+                    break;
                 case "5":
                     for (Movies m : movies) {
                         results.add(m);
                     }
                     break;
-
-            default:
-                ui.displayMsg("Ugyldigt valg.");
-                searchMovies();
-                return;
-        }
-        if (results.isEmpty()) {
-            ui.displayMsg("Ingen film fundet.");
-            Menu.mainMenu();
-
-        } else {
-            ui.displayMsg("Følgende film blev fundet: ");
-            for (int i = 0; i < results.size(); i++) {
-                ui.displayMsg((i+1) + ". " + results.get(i));
+                case "6":
+                    Menu.mainMenu();
+                    break;
+                default:
+                    ui.displayMsg("Ugyldigt valg.");
+                    searchMovies();
+                    return;
             }
-            ui.displayMsg("Vælg en film at se");
-            int index = Integer.parseInt(sc.nextLine()) - 1;
 
-            if (index >= 0 && index < results.size()) {
-                Menu.movieMenu(results.get(index));
 
+            if (results.isEmpty()) {
+                ui.displayMsg("Ingen film fundet.");
+                Menu.mainMenu();
+
+            } else {
+                ui.displayMsg("Følgende film blev fundet: ");
+                for (int i = 0; i < results.size(); i++) {
+                    ui.displayMsg((i + 1) + ". " + results.get(i));
+                }
+                ui.displayMsg("Vælg en film at se");
+                int index = Integer.parseInt(sc.nextLine()) - 1;
+
+                if (index >= 0 && index < results.size()) {
+                    Menu.movieMenu(results.get(index));
+
+                }
             }
+        } catch (NumberFormatException e) {
+            ui.displayMsg("Forkert input");
+            searchMovies();
         }
     }
 
@@ -210,6 +217,7 @@ public class Movies {
     public static void playingMenu(){
         ui.displayMsg("1. Sæt filmen på pause");
         ui.displayMsg("2. Vælg en anden film");
+        ui.displayMsg("3. Tilbage");
         System.out.print("Vælg: ");
         String Choice =  sc.nextLine();
 
@@ -221,7 +229,11 @@ public class Movies {
                     playingMenu();
                 }
                 break;
-            case "2": searchMovies();
+            case "2":
+                searchMovies();
+                break;
+            case "3":
+                playingMenu();
                 break;
             default:
                 ui.displayMsg("Inputtet findes ikke. Prøv med 1 eller 2");

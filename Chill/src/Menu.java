@@ -6,7 +6,7 @@ public class Menu {
     static TextUI ui = new TextUI();
     static Scanner sc = new Scanner(System.in);
 
-    public static void startMenu(){
+    public static void startMenu() {
         ui.displayMsg("Velkommen til Chill! Du er følgende valgmuligheder: ");
         ui.displayMsg("1. Opret dig som bruger");
         ui.displayMsg("2. Log ind");
@@ -29,13 +29,16 @@ public class Menu {
         }
 
     }
-    public static void mainMenu(){
+
+    public static void mainMenu() {
         ui.displayMsg("********** MENU **********");
         ui.displayMsg("1. Søg efter film");
         ui.displayMsg("2. Søg efter Serier");
         ui.displayMsg("3. Se din liste over sete film");
-        ui.displayMsg("4. Se din liste over gemte film");
-        ui.displayMsg("5. Log ud");
+        ui.displayMsg("4. Se din liste over sete serier");
+        ui.displayMsg("5. Se din liste over gemte film");
+        ui.displayMsg("6. Se din liste over gemte serier");
+        ui.displayMsg("7. Log ud");
         System.out.print("Vælg: ");
         String choice = sc.nextLine();
 
@@ -50,19 +53,26 @@ public class Menu {
                 Movies.viewList("CSV/FilmSet.txt", "Sete film: ");
                 break;
             case "4":
-                Movies.viewList("CSV/SeSenere.txt", "Se senere: ");
+                Series.viewList("CSV/SerierSet.txt", "Sete serier: ");
                 break;
             case "5":
+                Movies.viewList("CSV/FilmSeSenereListe.txt", "Se senere: ");
+                break;
+            case "6":
+                Series.viewList("CSV/SerierSeSenereListe.txt", "Se senere: ");
+                break;
+            case "7":
                 ui.displayMsg("Du er nu logget ud.");
                 startMenu();
                 break;
+
             default:
                 ui.displayMsg("Ugyldigt valg. Prøv venligst igen.");
                 mainMenu();
         }
     }
 
-    public static void movieMenu(Movies movies){
+    public static void movieMenu(Movies movies) {
         ui.displayMsg(" Du har valgt: " + movies.getName());
         ui.displayMsg("1. Afspil filmen");
         ui.displayMsg("2. Gem til 'Se senere'");
@@ -74,16 +84,16 @@ public class Menu {
         switch (choice) {
             case "1":
                 ui.displayMsg("Afspiller nu: " + movies.getName());
-                Movies.saveMovie(movies,"CSV/FilmSet.txt");
+                Movies.saveMovie(movies, "CSV/FilmSet.txt");
                 Movies.playingMenu();
                 break;
             case "2":
-                Movies.saveMovie(movies, "CSV/SeSenere.txt");
+                Movies.saveMovie(movies, "CSV/FilmSeSenereListe.txt");
                 ui.displayMsg(movies.getName() + " er gemt til din se senere liste");
                 Menu.mainMenu();
                 break;
             case "3":
-                Movies.removeMovie(movies, "CSV/SeSenere.txt");
+                Movies.removeMovie(movies, "CSV/FilmSeSenereListe.txt");
                 ui.displayMsg(movies.getName() + " er fjernet fra din se senere liste");
                 Menu.mainMenu();
                 break;
@@ -95,7 +105,7 @@ public class Menu {
         }
     }
 
-    public static void seriesMenu(Series series){
+    public static void seriesMenu(Series series) {
         ui.displayMsg(" Du har valgt: " + series.getName());
         ui.displayMsg("1. Afspil Serien");
         ui.displayMsg("2. Gem til 'Se senere'");
@@ -105,34 +115,35 @@ public class Menu {
         System.out.print("Vælg: ");
         String choice = sc.nextLine();
 
-        switch (choice) {
-            case "1":
-                ui.displayMsg("Afspiller nu: " + series.getName());
-                Series.saveSeries(series,"CSV/FilmSet.txt");
-                Series.seriesPlayingMenu();
-                break;
-            case "2":
-                Series.saveSeries(series, "CSV/SeSenere.txt");
-                ui.displayMsg(series.getName() + " er gemt til din se senere liste");
-                Menu.mainMenu();
-                break;
-            case "3":
-                Series.removeSeries(series, "CSV/SeSenere.txt");
-                ui.displayMsg(series.getName() + " er fjernet fra din se senere liste");
-                Menu.mainMenu();
-                break;
-            case "4":
-                series.getSeasonEpisodes();
-                ui.displayMsg(series.getName()+" har: "+ series.getSeasonEpisodes() + "Sæsoner og episoder");
-                break;
-            case "5":
-                Menu.mainMenu();
-                break;
-            default:
-                seriesMenu(series);
-        }
-    }
 
+            switch (choice) {
+                case "1":
+                    ui.displayMsg("Afspiller nu: " + series.getName());
+                    Series.saveSeries(series, "CSV/SerierSet.txt");
+                    Series.seriesPlayingMenu();
+                    break;
+                case "2":
+                    Series.saveSeries(series, "CSV/SerierSeSenereListe.txt");
+                    ui.displayMsg(series.getName() + " er gemt til din se senere liste");
+                    Menu.mainMenu();
+                    break;
+                case "3":
+                    Series.removeSeries(series, "CSV/SerierSeSenereListe.txt");
+                    ui.displayMsg(series.getName() + " er fjernet fra din se senere liste");
+                    Menu.mainMenu();
+                    break;
+                case "4":
+                    series.getSeasonEpisodes();
+                    ui.displayMsg(series.getName() + " har: " + series.getSeasonEpisodes() + "Sæsoner og episoder");
+                    seriesMenu(series);
+                    break;
+                case "5":
+                    Menu.mainMenu();
+                    break;
+                default:
+                    seriesMenu(series);
+            }
+    }
 }
 
 

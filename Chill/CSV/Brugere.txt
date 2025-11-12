@@ -1,8 +1,6 @@
-
-Hans;1234
-123;123
 Elias;67
-bobby;bob
 Elias;67
 Elioas;67
 Elias;67
+sara;67
+sara;retard

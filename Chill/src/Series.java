@@ -30,31 +30,33 @@ public class Series {
         Map<Integer, Integer> map = new LinkedHashMap<>();
         if (input == null || input.isEmpty()) return map;
 
-        input = input.replaceAll("[;\\s]+$", "");
+        // Normalize delimiters: turn semicolons into commas, trim spaces
+        input = input.replaceAll("\\s*;\\s*", ", ").trim();
+        input = input.replaceAll("[,\\s]+$", ""); // remove trailing commas/spaces
 
-        String[] parts = input.split(",\\s*");
+        String[] parts = input.split("[,]\\s*"); // split on commas only now
+
         for (String part : parts) {
             part = part.trim();
             if (part.isEmpty()) continue;
 
-
             String[] se = part.split("-");
-
             if (se.length != 2) {
-
                 ui.displayMsg("Wrong season episode format" + part);
                 continue;
             }
-                try {
-                    int season = Integer.parseInt(se[0].trim());
-                    int episodes = Integer.parseInt(se[1].trim());
-                    map.put(season, episodes);
-                } catch (NumberFormatException e) {
-                    ui.displayMsg("Could not parse season & episodes: " + part);
-                }
-            } return map;
 
+            try {
+                int season = Integer.parseInt(se[0].trim());
+                int episodes = Integer.parseInt(se[1].trim());
+                map.put(season, episodes);
+            } catch (NumberFormatException e) {
+                ui.displayMsg("Could not parse season & episodes: " + part);
+            }
+        }
+        return map;
     }
+
 
     public Map<Integer, Integer> getSeasonEpisodes() {
         return seasonEpisodes;
@@ -93,11 +95,12 @@ public class Series {
         ui.displayMsg("3. Efter Året det startede");
         ui.displayMsg("4. Efter bedømmelse");
         ui.displayMsg("5. Print alle serier ud");
+        ui.displayMsg("6. Tilbage");
         System.out.print("Vælg: ");
         String choice = sc.nextLine();
 
         ArrayList<Series> results = new ArrayList<>();
-
+        try {
         switch (choice) {
             case "1":
                 ui.displayMsg("Indtast venligst seriens navn: ");
@@ -136,21 +139,29 @@ public class Series {
                     results.add(s);
                 }
                 break;
+            case "6":
+                Menu.mainMenu();
+                break;
             default:
                 ui.displayMsg("Ugyldigt valg.");
                 searchSeries();
                 return;
         }
+
+        } catch (NumberFormatException e) {
+            ui.displayMsg("Eat ass");
+        }
+
         if (results.isEmpty()) {
             ui.displayMsg("Ingen serier fundet.");
             Menu.mainMenu();
 
         } else {
-            ui.displayMsg("Følgende film blev fundet: ");
+            ui.displayMsg("Følgende serier blev fundet: ");
             for (int i = 0; i < results.size(); i++) {
                 ui.displayMsg((i+1) + ". " + results.get(i));
             }
-            ui.displayMsg("Vælg en film at se");
+            ui.displayMsg("Vælg en serie at se");
             int index = Integer.parseInt(sc.nextLine()) - 1;
 
             if (index >= 0 && index < results.size()) {
@@ -169,29 +180,41 @@ public class Series {
                 String line = reader.nextLine().trim();
                 if (line.isEmpty()) continue;
 
-                String[] parts = line.split(";");
-                if (parts.length == 5) {
-                    String name = parts[0].trim();
-                    int goingYear = Integer.parseInt(parts[1].trim());
-                    String genreString = parts[2].trim();
-                    String ratingStr = parts[3].trim().replace(",", ".");
-                    double rating = Double.parseDouble(ratingStr);
-                    String seasonEpisodeString = parts[4].trim();
-
-                    series.add(new Series(name, goingYear, genreString, rating, seasonEpisodeString));
+                String[] parts = line.split(";", 5);
+                if (parts.length < 5) {
+                    System.out.println("Skipping invalid line: " + line);
+                    continue;
                 }
+                String name = parts[0].trim();
+
+                String yearField = parts[1].trim();
+                String startYearStr = yearField.split("-")[0].trim();
+                int goingYear = Integer.parseInt(startYearStr);
+
+                String genreString = parts[2].trim();
+
+                String ratingStr = parts[3].trim().replace(",", ".");
+                double rating = Double.parseDouble(ratingStr);
+
+                String seasonEpisodeString = parts[4].trim().replaceAll("\\s+", " ");
+
+                series.add(new Series(name, goingYear, genreString, rating, seasonEpisodeString));
             }
         } catch (FileNotFoundException e) {
             System.out.println("File not found");
+        } catch (NumberFormatException e) {
+            System.out.println("Error parsing numeric value: " + e.getMessage());
         }
+
         return series;
     }
+
 
     public static void saveSeries(Series series, String filename){
         try (FileWriter writer = new FileWriter(filename,true)){
             writer.write(series.getName() + ";" + series.getGenres() + ";" + series.getRunningYear() + series.getRating());
         } catch (IOException e){
-            System.out.println("Fejl under gemning af film.");
+            System.out.println("Fejl under gemning af serien.");
         }
     }
 
