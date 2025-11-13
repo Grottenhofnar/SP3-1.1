@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-
 public class Series {
 
     private static TextUI ui = new TextUI();
@@ -14,27 +13,30 @@ public class Series {
     private String name;
     private int runningYear;
     private List<String> genres;
+    private String genreString;
     private double rating;
     private Map<Integer, Integer> seasonEpisodes;
+    private String seasonEpisodeString;
 
-    public Series(String name, int runningYear, String genreString, double rating, String seasonEpisodeString)
-    {
+    public Series(String name, int runningYear, String genreString, double rating, String seasonEpisodeString) {
         this.name = name;
         this.runningYear = runningYear;
-        this.genres = Arrays.asList(genreString.split(",\\s*"));;
+        this.genres = Arrays.asList(genreString.split(",\\s*"));
+        ;
+        this.genreString = genreString.trim();
+        this.seasonEpisodeString = seasonEpisodeString.trim();
         this.rating = rating;
-        this.seasonEpisodes = parseSeasonEpisodes(seasonEpisodeString);
+        this.seasonEpisodes = parseSeasonEpisodes(this.seasonEpisodeString);
     }
 
     private Map<Integer, Integer> parseSeasonEpisodes(String input) {
         Map<Integer, Integer> map = new LinkedHashMap<>();
         if (input == null || input.isEmpty()) return map;
 
-        // Normalize delimiters: turn semicolons into commas, trim spaces
         input = input.replaceAll("\\s*;\\s*", ", ").trim();
-        input = input.replaceAll("[,\\s]+$", ""); // remove trailing commas/spaces
+        input = input.replaceAll("[,\\s]+$", "");
 
-        String[] parts = input.split("[,]\\s*"); // split on commas only now
+        String[] parts = input.split("[,]\\s*");
 
         for (String part : parts) {
             part = part.trim();
@@ -57,7 +59,6 @@ public class Series {
         return map;
     }
 
-
     public Map<Integer, Integer> getSeasonEpisodes() {
         return seasonEpisodes;
     }
@@ -78,15 +79,22 @@ public class Series {
         return name;
     }
 
+    public String getSeasonEpisodeString() {
+        return seasonEpisodeString;
+    }
+
+    public String getGenreString() {
+        return genreString;
+    }
+
     public boolean hasGenres(String genre) {
         for (String g : genres) {
             if (g.equalsIgnoreCase(genre)) return true;
         }
         return false;
-        }
+    }
 
-
-    public static void searchSeries(){
+    public static void searchSeries() {
         ArrayList<Series> series = loadSeries();
 
         ui.displayMsg("Du kan vælge at søge efter serier med følgende muligheder: ");
@@ -101,76 +109,75 @@ public class Series {
 
         ArrayList<Series> results = new ArrayList<>();
         try {
-        switch (choice) {
-            case "1":
-                ui.displayMsg("Indtast venligst seriens navn: ");
-                String inputName = sc.nextLine().toLowerCase();
-                for (Series s : series) {
-                    if (s.getName().toLowerCase().contains(inputName)) results.add(s);
-                }
-                break;
+            switch (choice) {
+                case "1":
+                    ui.displayMsg("Indtast venligst seriens navn: ");
+                    String inputName = sc.nextLine().toLowerCase();
+                    for (Series s : series) {
+                        if (s.getName().toLowerCase().contains(inputName)) results.add(s);
+                    }
+                    break;
 
-            case "2":
-                ui.displayMsg("Indtast kategori: ");
-                String genres = sc.nextLine();
-                for (Series s : series) {
-                    if (s.hasGenres(genres)) {
+                case "2":
+                    ui.displayMsg("Indtast kategori: ");
+                    String genres = sc.nextLine();
+                    for (Series s : series) {
+                        if (s.hasGenres(genres)) {
+                            results.add(s);
+                        }
+                    }
+                    break;
+
+                case "3":
+                    ui.displayMsg("Indtast udgivelsesår: ");
+                    int year = Integer.parseInt(sc.nextLine());
+                    for (Series s : series) {
+                        if (s.getRunningYear() == year) results.add(s);
+                    }
+                    break;
+                case "4":
+                    ui.displayMsg("Minimum bedømmelse: ");
+                    double minRating = Double.parseDouble(sc.nextLine());
+                    for (Series s : series) {
+                        if (s.getRating() >= minRating) results.add(s);
+                    }
+                    break;
+                case "5":
+                    for (Series s : series) {
                         results.add(s);
                     }
-                }
-                break;
+                    break;
+                case "6":
+                    Menu.mainMenu();
+                    break;
+                default:
+                    ui.displayMsg("Ugyldigt valg.");
+                    searchSeries();
+                    return;
+            }
 
-            case "3":
-                ui.displayMsg("Indtast udgivelsesår: ");
-                int year = Integer.parseInt(sc.nextLine());
-                for (Series s : series) {
-                    if (s.getRunningYear() == year) results.add(s);
-                }
-                break;
-            case "4":
-                ui.displayMsg("Minimum bedømmelse: ");
-                double minRating = Double.parseDouble(sc.nextLine());
-                for (Series s : series) {
-                    if (s.getRating() >= minRating) results.add(s);
-                }
-                break;
-            case "5":
-                for (Series s : series) {
-                    results.add(s);
-                }
-                break;
-            case "6":
-                Menu.mainMenu();
-                break;
-            default:
-                ui.displayMsg("Ugyldigt valg.");
+            if (results.isEmpty()) {
+                ui.displayMsg("Ingen serier fundet.");
                 searchSeries();
-                return;
-        }
 
+            } else {
+                ui.displayMsg("Følgende serier blev fundet: ");
+                for (int i = 0; i < results.size(); i++) {
+                    ui.displayMsg((i + 1) + ". " + results.get(i));
+                }
+                ui.displayMsg("Vælg en serie at se");
+                int index = Integer.parseInt(sc.nextLine()) - 1;
+
+                if (index >= 0 && index < results.size()) {
+                    Menu.seriesMenu(results.get(index));
+
+                }
+            }
         } catch (NumberFormatException e) {
-            ui.displayMsg("Eat ass");
-        }
-
-        if (results.isEmpty()) {
-            ui.displayMsg("Ingen serier fundet.");
-            Menu.mainMenu();
-
-        } else {
-            ui.displayMsg("Følgende serier blev fundet: ");
-            for (int i = 0; i < results.size(); i++) {
-                ui.displayMsg((i+1) + ". " + results.get(i));
-            }
-            ui.displayMsg("Vælg en serie at se");
-            int index = Integer.parseInt(sc.nextLine()) - 1;
-
-            if (index >= 0 && index < results.size()) {
-                Menu.seriesMenu(results.get(index));
-
-            }
+            ui.displayMsg("Forkert input.");
+            searchSeries();
         }
     }
-
     public static ArrayList<Series> loadSeries() {
         ArrayList<Series> series = new ArrayList<>();
         File file = new File("CSV/serier.csv");
@@ -208,13 +215,46 @@ public class Series {
 
         return series;
     }
+    public static void saveSeries(Series series, String filename) {
+        File file = new File(filename);
 
+        boolean duplicateFound = false;
 
-    public static void saveSeries(Series series, String filename){
-        try (FileWriter writer = new FileWriter(filename,true)){
-            writer.write(series.getName() + ";" + series.getGenres() + ";" + series.getRunningYear() + series.getRating());
-        } catch (IOException e){
-            System.out.println("Fejl under gemning af serien.");
+        if (file.exists()) {
+            try (Scanner reader = new Scanner(file)) {
+                while (reader.hasNextLine()) {
+                    String line = reader.nextLine().trim();
+                    if (line.isEmpty()) continue;
+
+                    String[] parts = line.split(";", 5);
+                    if (parts.length < 5) continue;
+
+                    String existingName = parts[0].trim();
+                    String existingYear = parts[1].trim();
+
+                    if (existingName.equalsIgnoreCase(series.getName())
+                            && existingYear.equals(String.valueOf(series.getRunningYear()))) {
+                        duplicateFound = true;
+                        break;
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                ui.displayMsg("Kunne ikke finde filen: " + filename);
+            }
+        }
+
+        if (!duplicateFound) {
+            try (FileWriter writer = new FileWriter(file, true)) {
+                writer.write(series.getName() + ";"
+                        + series.getRunningYear() + ";"
+                        + series.getGenreString() + ";"
+                        + series.getRating() + ";"
+                        + series.getSeasonEpisodeString()
+                        + System.lineSeparator());
+                ui.displayMsg("Serien '" + series.getName() + "' blev gemt.");
+            } catch (IOException e) {
+                ui.displayMsg("Fejl under gemning af serien.");
+            }
         }
     }
 
@@ -229,7 +269,7 @@ public class Series {
                 while (reader.hasNextLine()) {
                     String line = reader.nextLine();
                     if (!line.startsWith(series.getName() + ";")) {
-                        writer.write(line);
+                        writer.write(line + System.lineSeparator());
                     }
                 }
             }
@@ -243,6 +283,7 @@ public class Series {
     public static void seriesPlayingMenu(){
         ui.displayMsg("1. Sæt serien på pause");
         ui.displayMsg("2. Vælg en anden serie");
+        ui.displayMsg("3. Tilbage til hovedmenuen");
         System.out.print("Vælg: ");
         String Choice =  sc.nextLine();
 
@@ -256,52 +297,58 @@ public class Series {
                 break;
             case "2": searchSeries();
                 break;
+            case "3":
+                Menu.mainMenu();
+                break;
             default:
-                ui.displayMsg("Inputtet findes ikke. Prøv med 1 eller 2");
+                ui.displayMsg("Inputtet findes ikke.");
                 seriesPlayingMenu();
-
         }
     }
 
     public static void viewList(String filename, String listName) {
         File file = new File(filename);
         if(!file.exists()) {
-            ui.displayMsg("Ingen film i " + listName + ".");
+            ui.displayMsg("Ingen serier i " + listName + ".");
             Menu.mainMenu();
             return;
         }
 
-        ui.displayMsg(listName);
+        ui.displayMsg(listName + "\n");
+
         try (Scanner reader = new Scanner(file)) {
             int i = 1;
             while (reader.hasNextLine()) {
-                String line = reader.nextLine();
-                ui.displayMsg(i++ + "." + line);
+                String line = reader.nextLine().trim();
+                if (line.isEmpty()) continue;
+
+                String[] parts = line.split(";", 5);
+                if (parts.length < 5) {
+                    ui.displayMsg(i++ + ". [Ugyldig linje] " + line);
+                    continue;
+                }
+
+                String name = parts[0].trim();
+                String year = parts[1].trim();
+                String genres = parts[2].trim();
+                String rating = parts[3].trim();
+                String seasonEp = parts[4].trim();
+
+                ui.displayMsg(i++ + ". " + name + " (" + year + ")\n"
+                        + "   Genre(s): " + genres + "\n"
+                        + "   Rating: " + rating + "\n"
+                        + "   Sæsoner & episoder: " + seasonEp + "\n");
             }
         } catch (FileNotFoundException e) {
-            ui.displayMsg("Kunne ikke finde filmen: " + filename);
+            ui.displayMsg("Kunne ikke finde serien: " + filename);
         }
 
         ui.displayMsg("Tryk på en vilkårlig tast for at gå tilbage.");
         sc.nextLine();
         Menu.mainMenu();
     }
-
     @Override
     public String toString() {
-        return "Series{" +
-                "name='" + name + '\'' +
-                ", runningYear=" + runningYear +
-                ", genres=" + genres +
-                ", rating=" + rating +
-                ", seasonAndEpisodes=" + seasonEpisodes +
-                '}';
+        return "Serie: " + name + "(" + rating + ")" + " - " + runningYear + " - " + genres;
     }
 }
-
-
-
-
-
-
-

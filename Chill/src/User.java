@@ -12,7 +12,6 @@ public class User {
 
     public static void createUser(){
         try{
-            File dir = new File("CSV");
 
             FileWriter writer = new FileWriter("CSV/Brugere.txt", true);
 

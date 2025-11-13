@@ -13,18 +13,24 @@ public class Movies {
     static Scanner sc = new Scanner(System.in);
     private String name;
     private int releaseYear;
+    private String genreString;
     private List<String> genres;
     private double rating;
 
     public Movies(String name, int releaseYear, String genreString, double rating) {
         this.name = name;
         this.releaseYear = releaseYear;
+        this.genreString = genreString.trim();
         this.genres = Arrays.asList(genreString.split(",\\s*"));
         this.rating = rating;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getGenreString() {
+        return genreString;
     }
 
     public int getReleaseYear() {
@@ -99,38 +105,32 @@ public class Movies {
                     }
                     break;
                 case "6":
-                    Menu.mainMenu();
+                    searchMovies();
                     break;
                 default:
                     ui.displayMsg("Ugyldigt valg.");
                     searchMovies();
                     return;
             }
-
-
             if (results.isEmpty()) {
                 ui.displayMsg("Ingen film fundet.");
-                Menu.mainMenu();
-
+                searchMovies();
             } else {
                 ui.displayMsg("Følgende film blev fundet: ");
                 for (int i = 0; i < results.size(); i++) {
                     ui.displayMsg((i + 1) + ". " + results.get(i));
                 }
-                ui.displayMsg("Vælg en film at se");
+                ui.displayMsg("Vælg en film at se, eller tryk enter for at komme tilbage");
                 int index = Integer.parseInt(sc.nextLine()) - 1;
 
                 if (index >= 0 && index < results.size()) {
                     Menu.movieMenu(results.get(index));
-
                 }
             }
         } catch (NumberFormatException e) {
-            ui.displayMsg("Forkert input");
             searchMovies();
         }
     }
-
     public static ArrayList<Movies> loadMovies(){
         ArrayList<Movies> movies = new ArrayList<>();
         File file = new File("CSV/film.csv");
@@ -139,7 +139,6 @@ public class Movies {
             while (reader.hasNextLine()) {
                 String line = reader.nextLine().trim();
                 if (line.isEmpty()) continue;
-
 
                 String[] parts = line.split(";");
                 if (parts.length == 4) {
@@ -157,15 +156,48 @@ public class Movies {
         }
         return movies;
     }
+    public static void saveMovie(Movies movie, String filename) {
+        File file = new File(filename);
 
-    public static void saveMovie(Movies movies, String filename){
-        try (FileWriter writer = new FileWriter(filename,true)){
-            writer.write(movies.getName() + ";" + movies.getGenres() + ";" + movies.getReleaseYear() + movies.getRating());
-        } catch (IOException e){
-            System.out.println("Fejl under gemning af film.");
+        // Vi tjekker for en duplikation (jeg kan snart ikke mere)
+        boolean duplicateFound = false;
+        if (file.exists()) {
+            try (Scanner reader = new Scanner(file)) {
+                while (reader.hasNextLine()) {
+                    String line = reader.nextLine().trim();
+                    if (line.isEmpty()) continue;
+
+                    String[] parts = line.split(";", 4);
+                    if (parts.length < 4) continue;
+
+                    String existingName = parts[0].trim();
+                    String existingYear = parts[1].trim();
+
+
+                    if (existingName.equalsIgnoreCase(movie.getName())
+                            && existingYear.equals(String.valueOf(movie.getReleaseYear()))) {
+                        duplicateFound = true;
+                        break;
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                ui.displayMsg("Kunne ikke finde filen: " + filename);
+            }
+        }
+        // Gem hvis det ikke er en duplikation
+        if (!duplicateFound) {
+            try (FileWriter writer = new FileWriter(file, true)) {
+                writer.write(movie.getName() + ";"
+                        + movie.getReleaseYear() + ";"
+                        + movie.getGenreString() + ";"
+                        + movie.getRating()
+                        + System.lineSeparator());
+                ui.displayMsg("Filmen '" + movie.getName() + "' blev gemt.");
+            } catch (IOException e) {
+                ui.displayMsg("Fejl under gemning af filmen.");
+            }
         }
     }
-
     public static void removeMovie(Movies movies, String filename){
         try {
             File inputFile = new File(filename);
@@ -177,7 +209,7 @@ public class Movies {
                 while (reader.hasNextLine()) {
                     String line = reader.nextLine();
                     if (!line.startsWith(movies.getName() + ";")) {
-                        writer.write(line);
+                        writer.write(line + System.lineSeparator());
                     }
                 }
             }
@@ -202,8 +234,17 @@ public class Movies {
         try (Scanner reader = new Scanner(file)) {
             int i = 1;
             while (reader.hasNextLine()) {
-                String line = reader.nextLine();
-                ui.displayMsg(i++ + "." + line);
+                String line = reader.nextLine().trim();
+                if (line.isEmpty()) continue;
+                String[] parts = line.split(";");
+                String formatted;
+                if (parts.length == 4) {
+                    formatted = i + ". " + parts[0].trim() + " (" + parts[1].trim() + ") - " + parts[2].trim() + " - (" + parts[3].trim() + ") ";
+                } else {
+                    formatted = i + ". " + line;
+                }
+                ui.displayMsg(formatted);
+                i++;
             }
         } catch (FileNotFoundException e) {
             ui.displayMsg("Kunne ikke finde filmen: " + filename);
@@ -217,7 +258,7 @@ public class Movies {
     public static void playingMenu(){
         ui.displayMsg("1. Sæt filmen på pause");
         ui.displayMsg("2. Vælg en anden film");
-        ui.displayMsg("3. Tilbage");
+        ui.displayMsg("3. Tilbage til hovedmenuen");
         System.out.print("Vælg: ");
         String Choice =  sc.nextLine();
 
@@ -233,21 +274,15 @@ public class Movies {
                 searchMovies();
                 break;
             case "3":
-                playingMenu();
+                Menu.mainMenu();
                 break;
             default:
-                ui.displayMsg("Inputtet findes ikke. Prøv med 1 eller 2");
+                ui.displayMsg("Inputtet findes ikke.");
                 playingMenu();
-
         }
     }
     @Override
     public String toString() {
-        return "Movies{" +
-                "name='" + name + '\'' +
-                ", releaseYear=" + releaseYear +
-                ", genres=" + genres +
-                ", rating=" + rating +
-                '}';
+        return "Movie: " + name + "(" + rating + ")" + " - " + releaseYear + " - " + genreString;
     }
 }
